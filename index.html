@@ -240,6 +240,20 @@
               </ul>
           </li>
           <li>
+            <a href="#run-irohad-locally" class="toc-h1 toc-link" data-title="Run irohad locally">Run irohad locally</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#generate-genesis-block" class="toc-h2 toc-link" data-title="Run irohad locally">Generate genesis block</a>
+                  </li>
+                  <li>
+                    <a href="#prepare-config-file" class="toc-h2 toc-link" data-title="Run irohad locally">Prepare config file</a>
+                  </li>
+                  <li>
+                    <a href="#launch-irohad" class="toc-h2 toc-link" data-title="Run irohad locally">Launch irohad</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
             <a href="#transactions" class="toc-h1 toc-link" data-title="Transactions">Transactions</a>
               <ul class="toc-list-h2">
                   <li>
@@ -455,6 +469,119 @@ cmake --build build -- -j4
 </blockquote>
 <pre class="highlight shell tab-shell"><code>brew tap soramitsu/iroha
 brew install iroha
+</code></pre><h1 id='run-irohad-locally'>Run irohad locally</h1><h2 id='generate-genesis-block'>Generate genesis block</h2>
+<ol>
+<li><p>Create peers.list file containing the peers&#39; addresses. For the local node suffice to add only single peer:
+<code>bash
+$ echo &#39;localhost:10001&#39; &gt; peers.list
+</code></p></li>
+<li><p>Generate genesis block using iroha-cli:
+<code>bash
+$ iroha-cli --genesis_block --peers_address peers.list
+</code>
+File genesis.block with keypair files for Administrator account (<code>admin@test.priv</code> and <code>admin@test.pub</code>) and node (<code>node0.priv</code> and <code>node0.pub</code>) should be generated in the same folder.</p></li>
+</ol>
+<h2 id='prepare-config-file'>Prepare config file</h2>
+<p>Configuration file keeps information about storage credentials and irohad parameters:</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>block_store_path</td>
+<td>string</td>
+<td>Path to store blocks of committed transactions</td>
+</tr>
+<tr>
+<td>torii_port</td>
+<td>integer</td>
+<td>Port to access iroha node</td>
+</tr>
+<tr>
+<td>internal_port</td>
+<td>integer</td>
+<td>Port used to communicate ordering service, YAC consensus and block loader for synchronization</td>
+</tr>
+<tr>
+<td>pg_opt</td>
+<td>string</td>
+<td>Postgres credentials</td>
+</tr>
+<tr>
+<td>redis_host</td>
+<td>string</td>
+<td>Redis host&#39;s IP address</td>
+</tr>
+<tr>
+<td>redis_port</td>
+<td>integer</td>
+<td>Port to access redis storage</td>
+</tr>
+<tr>
+<td>max_proposal_size</td>
+<td>integer</td>
+<td>Maximum size of created proposals</td>
+</tr>
+<tr>
+<td>proposal_delay</td>
+<td>integer</td>
+<td>The period of time (in ms) used to prepare proposal of transactions</td>
+</tr>
+<tr>
+<td>vote_delay</td>
+<td>integer</td>
+<td>The period of time (in ms) of spreading vote across the network</td>
+</tr>
+<tr>
+<td>load_delay</td>
+<td>integer</td>
+<td>The period of time (in ms) between synchronizations between peers</td>
+</tr>
+</tbody></table>
+
+<p>Example:</p>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"block_store_path"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"/tmp/block_store/"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"torii_port"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">50051</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"internal_port"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10001</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"pg_opt"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"host=localhost port=5432 user=postgres password=mysecretpassword"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"redis_host"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"localhost"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"redis_port"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">6379</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"max_proposal_size"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"proposal_delay"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"vote_delay"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"load_delay"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span></code></pre><h2 id='launch-irohad'>Launch irohad</h2>
+<p>To launch irohad daemon, following parameters must be passed:</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Meaning</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>config</td>
+<td>configuration file, containing postgres, and redis connection, and values to tune the system</td>
+</tr>
+<tr>
+<td>genesis_block</td>
+<td>initial block in the ledger</td>
+</tr>
+<tr>
+<td>keypair_name</td>
+<td>private and public key file names without .priv or .pub extension. Used by peer to sign the blocks</td>
+</tr>
+</tbody></table>
+
+<p>Use this command to launch iroha from development branch:</p>
+<pre class="highlight plaintext"><code>irohad --config example/config.sample --genesis_block docs/zero.block --keypair_name docs/node
 </code></pre><h1 id='transactions'>Transactions</h1>
 <blockquote>
 <p>Transaction </p>
